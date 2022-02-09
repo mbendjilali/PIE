@@ -17,6 +17,10 @@ def RRT_star(startpos, endpos, obstacles, n_iter, radius, stepSize):
     G = Graph(startpos, endpos)
 
     for _ in range(n_iter):  # Operates n_iter times
+
+        if endpos in G.vex2idx:
+            break
+
         randvex = G.randomPosition()
         while isInObstacle(randvex, obstacles, radius):  # Ensures that the random vex is not too close to an obstacle
             randvex = G.randomPosition()
@@ -107,5 +111,3 @@ def pathSearch(startpos, endpos, obstacles, n_iter, radius, stepSize):
     if G.success:
         path = dijkstra(G)
         return path
-
-

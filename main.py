@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     if G.success:
         path = dijkstra(G)  # If a path is found, it needs to be transformed into GPS waypoints.
-        print(path)
+        # print(path)
         plot(G, obstacles, radius, path)
     else:
         print(0)
