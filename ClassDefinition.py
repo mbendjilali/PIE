@@ -1,27 +1,37 @@
+u"""
+This code is an attempt at implementing a 3D version of the previously coded RRT-start by Fanjin Zeng.
+https://gist.github.com/Fnjn/58e5eaa27a3dc004c3526ea82a92de80
+
+Bendjilali Moussa 2022.
+"""
+
+from __future__ import division
+from __future__ import absolute_import
 import numpy as np
 from random import random
 
 
-class Line:
-    """ Defines the line class """
+class Line(object):
+    u""" Defines the line class """
 
     def __init__(self, p0, p1):
         self.p = np.array(p0)  # start point
+        self.p1 = np.array(p1)
         self.dirn = np.array(p1) - np.array(p0)
         self.dist = np.linalg.norm(self.dirn)  # distance between the end and start point
         self.dirn /= self.dist  # normalized vector from p0 to p1
 
-    def path(self, t):
-        """ Returns a point along the line """
+    def ray(self, t):
+        u""" Returns a point along the line """
 
         return self.p + t * self.dirn
 
 
-class Graph:
-    """ Defines the graph class """
+class Graph(object):
+    u""" Defines the graph class """
 
     def __init__(self, startpos, endpos):
-        """ Initializes the tree """
+        u""" Initializes the tree """
         self.startpos = startpos
         self.endpos = endpos
 
@@ -37,8 +47,9 @@ class Graph:
         self.sy = endpos[1] - startpos[1]
         self.sz = endpos[2] - startpos[2]
 
+
     def add_vex(self, pos):
-        """
+        u"""
         Returns the Id associated to pos if already in the graph, otherwise adds it to the graph and returns the newly created Id
         """
 
@@ -52,13 +63,13 @@ class Graph:
         return idx
 
     def add_edge(self, idx1, idx2, cost):
-        """ Adds the edge between idx1 and idx2 in the graph """
+        u""" Adds the edge between idx1 and idx2 in the graph """
         self.edges.append((idx1, idx2))
         self.neighbors[idx1].append((idx2, cost))
         self.neighbors[idx2].append((idx1, cost))
 
     def randomPosition(self):
-        """ Shoots a random vertex within the window search """
+        u""" Shoots a random vertex within the window search """
         rx = random()
         ry = random()
         rz = random()
