@@ -1,3 +1,10 @@
+"""
+This code is an attempt at implementing a 3D version of the previously coded RRT-start by Fanjin Zeng.
+https://gist.github.com/Fnjn/58e5eaa27a3dc004c3526ea82a92de80
+
+Bendjilali Moussa 2022.
+"""
+
 import numpy as np
 from random import random
 
@@ -7,11 +14,12 @@ class Line:
 
     def __init__(self, p0, p1):
         self.p = np.array(p0)  # start point
+        self.p1 = np.array(p1)
         self.dirn = np.array(p1) - np.array(p0)
         self.dist = np.linalg.norm(self.dirn)  # distance between the end and start point
         self.dirn /= self.dist  # normalized vector from p0 to p1
 
-    def path(self, t):
+    def ray(self, t):
         """ Returns a point along the line """
 
         return self.p + t * self.dirn
@@ -36,6 +44,7 @@ class Graph:
         self.sx = endpos[0] - startpos[0]
         self.sy = endpos[1] - startpos[1]
         self.sz = endpos[2] - startpos[2]
+
 
     def add_vex(self, pos):
         """
