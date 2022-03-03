@@ -8,6 +8,7 @@ Bendjilali Moussa 2022.
 from PathPlanning import *
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
 import matplotlib.pyplot as plt
+from meshRecon import *
 
 
 def drawSphere(obs, radius):
@@ -26,14 +27,15 @@ def drawCube(obs, radius):
     return x, y, z
 
 
-def plot(obstacles, radius, G=None, path=None):
+def plot(obstacles, radius=None, G=None, path=None):
     fig = plt.figure()
     ax = fig.add_subplot(projection='3d')
 
-    for obs in obstacles:
-        x, y, z = drawSphere(obs, radius)
-        #  x, y, z = drawCube(obs, radius)
-        ax.plot_surface(x, y, z, color='blue', linewidth=0.0)
+    if obstacles is not None:
+        for obs in obstacles:
+            x, y, z = drawSphere(obs, radius)
+            #  x, y, z = drawCube(obs, radius)
+            ax.plot_surface(x, y, z, color='blue', linewidth=0.0)
 
     if G is not None:
         ax.scatter(G.startpos[0], G.startpos[1], G.startpos[2], c='black')
@@ -58,19 +60,23 @@ if __name__ == '__main__':
     """
     startpos = (0., 0., 0.)
     endpos = (9., 9., 9.)
-    obstacles = [[3., 3., 3.], [6., 6., 8.], [2., 4., 6.], [7., 3., 2.], [5., 7.5, 2.], [7.5, 7.5, 7.5]]  # The
-    # obstacles are represented by tuples
-    n_iter = 1000
-    radius = 1.9
-    stepSize = 0.7
+    obstacles = txt2list('obstacles.txt')
+    mesh = pointCloud2Mesh(list2PointCloud(obstacles))
+    vertices, triangles = getTriangles(mesh)
+    n_iter = 100
+    radius = 0.1
+    stepSize = 1
     #
     # G_A, G_B, path_A, path_B = RRT_Connect(startpos, endpos, obstacles, n_iter, radius, stepSize)
     # plot(obstacles, radius, None, path)
 
     G = RRT_star(startpos, endpos, obstacles, n_iter, radius, stepSize)
+
     if G.success:
         path = findPath(G)
-        plot(obstacles, radius, G, path)
+        # print("success :", time() - t)
+        # plot(obstacles, radius, G, path)
     else:
-        print(0)
-        plot(obstacles, radius, G)
+        None
+        # print("failure :", time() - t)
+        # plot(obstacles, radius, G)
