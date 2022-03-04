@@ -1,36 +1,88 @@
 """
-This code is an attempt at implementing a 3D version of the previously coded RRT-start by Fanjin Zeng.
-https://gist.github.com/Fnjn/58e5eaa27a3dc004c3526ea82a92de80
+This code is an attempt at implementing a 3D version of the previously coded RRT-start by Fanjin Zeng
+(https://gist.github.com/Fnjn/58e5eaa27a3dc004c3526ea82a92de80) using a polygonal representation of the obstacles.
 
-Bendjilali Moussa 2022.
-"""
+It is parted in 5 different Python files :
+ClassDefinition.py -> Defines the most basic structures needed to implement an RRT algorithm, i.e. what a graph,
+a line and a window are.
+Geometry.py        -> Sets up collision criteria for objects in a 3D space (spheres, cubes, and triangles).
+PathPlanning.py    -> Implements the RRT-Star and RRT-Connect (currently not working) algorithms. It also retrieves
+the correct path_list from start to goal within a successful tree.
+meshRecon.py       -> Uses the Alpha Shape algorithm to generate a triangle set from a point cloud.
+main.py            -> Sets up every parameter, loads a point cloud, derives the RRT algorithm and plots the result.
+
+By Bendjilali Moussa 2022. """
 
 from Geometry import *
 
 
-def RRT_star(startpos, endpos, obstacles, n_iter, radius, stepSize):
+# ------------------------------ RRT_STAR -----------------------------------
+
+
+def nearest(G, vex, obstacles, radius=None):
+    """Returns the closest visible vertex in g to vex"""
+
+    Nvex = None
+    Nidx = None
+    minDist = float("inf")
+
+    for idx, v in enumerate(G.vertices):
+        line = Line(v, vex)
+        if isThruTriangle(line, obstacles):
+            # if isThruObstacle(line, obstacles, radius):
+            continue
+        dist = distance(v, vex)
+        if dist < minDist:
+            minDist = dist
+            Nidx = idx
+            Nvex = v
+
+    return Nvex, Nidx
+
+
+def newVertex(randvex, nearvex, stepSize):
+    """ Shoots a new vertex between randvex and nearvex """
+
+    dirn = np.array(randvex) - np.array(nearvex)
+    length = np.linalg.norm(dirn)
+    dirn = (dirn / length) * min(stepSize, length)  # This ensures that the shot vertex lies between randvex and nearvex
+    newvex = (nearvex[0] + dirn[0], nearvex[1] + dirn[1], nearvex[2] + dirn[2])
+    if newvex == randvex:
+        return newvex, 'Reached'
+    else:
+        return newvex, 'Advanced'
+
+
+def RRT_star(startpos, endpos, obstacles, window, n_iter, stepSize, radius=None):
     """
-    Implements the RRT Star algorithm.
-    This part of the code can be kept unchanged regardless of the workspace used (R2 or R3).
+    Implements the RRT Star algorithm
+    :param startpos: starting position -> tuple of size 3
+    :param endpos: goal position -> tuple of size 3
+    :param obstacles: sets of triangles -> tuple of 2 arrays containing edges positions and idx
+    :param window: search window
+    :param n_iter: maximum number of iterations
+    :param stepSize: minimum increment in the tree
+    :param radius: obsolete parameter for polygonal representation of the obstacles
+    :return: graph
     """
 
     # ---- INIT TREE
     G = Graph(startpos, endpos)
 
-    for i in range(n_iter):  # Operates n_iter times
+    for i in range(n_iter):
 
-        if endpos in G.vex2idx:
+        if endpos in G.vex2idx:  # checks if the goal position is not already in the tree
             G.success = True
             break
 
         # ---- RANDOM CONFIG
-        randvex = G.randomPosition()
-        while isInObstacle(randvex, obstacles, radius):  # Ensures that the random vex is not too close to an obstacle
-            randvex = G.randomPosition()
+        randvex = window.randomPosition()
+        # while isInObstacle(randvex, obstacles, rad):  # Obsolete for polygonal representation of the obstacles
+        #     randvex = window.randomPosition()
 
         # ---- EXTEND
         nearvex, nearidx = nearest(G, randvex, obstacles,
-                                   radius)  # Looks for the nearest visible vertex to randvex in the graph
+                                   radius)
         if nearvex is None:  # If none is found, shoots a new randvex
             continue
 
@@ -51,7 +103,8 @@ def RRT_star(startpos, endpos, obstacles, n_iter, radius, stepSize):
                 continue
 
             line = Line(vex, newvex)
-            if isThruObstacle(line, obstacles, radius):
+            # if isThruObstacle(line, obstacles, rad):
+            if isThruTriangle(line, obstacles):
                 continue
 
             idx = G.vex2idx[vex]
@@ -60,10 +113,11 @@ def RRT_star(startpos, endpos, obstacles, n_iter, radius, stepSize):
                 G.distances[idx] = G.distances[newidx] + dist
 
         # ---- REACH
-        line = Line(newvex, G.endpos)
-        dist = distance(newvex, G.endpos)
-        if not isThruObstacle(line, obstacles, radius):
-            endidx = G.add_vex(G.endpos)
+        line = Line(newvex, G.end)
+        dist = distance(newvex, G.end)
+        # if not isThruObstacle(line, obstacles, rad):
+        if not isThruTriangle(line, obstacles):
+            endidx = G.add_vex(G.end)
             G.add_edge(newidx, endidx, dist)
             try:
                 G.distances[endidx] = min(G.distances[endidx], G.distances[newidx] + dist)
@@ -73,7 +127,10 @@ def RRT_star(startpos, endpos, obstacles, n_iter, radius, stepSize):
     return G
 
 
-def connect(G: Graph, vex, obstacles, radius, stepSize):
+# ------------------------------ RRT_CONNECT --------------------------------
+
+
+def connect(G: Graph, vex, obstacles, radius):  # TODO debug infinite loop
     while True:
         nearvex, nearidx = nearest(G, vex, obstacles,
                                    radius)  # Looks for the nearest visible vertex to vex in the graph
@@ -95,7 +152,7 @@ def RRT_Connect(startpos, endpos, obstacles, n_iter, radius, stepSize):
     :param n_iter: number of iterations of the algorithm
     :param radius: L1 norm of the obstacles
     :param stepSize:
-    :return: G is a graph representing the tree built from the algorithm
+    :return: g is a graph representing the tree built from the algorithm
     """
 
     # ---- INIT TREES
@@ -111,7 +168,8 @@ def RRT_Connect(startpos, endpos, obstacles, n_iter, radius, stepSize):
             randvex = G_A.randomPosition()
 
         # ---- EXTEND
-        nearvex, nearidx = nearest(G_A, randvex, obstacles, radius)  # Looks for the nearest visible vertex to randvex in the graph
+        nearvex, nearidx = nearest(G_A, randvex, obstacles, radius)  # Looks for the nearest visible vertex to
+        # randvex in the graph
         if nearvex is None:  # If none is found, shoots a new randvex
             continue
 
@@ -141,12 +199,12 @@ def RRT_Connect(startpos, endpos, obstacles, n_iter, radius, stepSize):
                 G_A.distances[cidx] = G_A.distances[newidx] + dist
 
         # ---- CONNECT
-        G_B, status = connect(G_B, newvex, obstacles, radius, stepSize)
+        G_B, status = connect(G_B, newvex, obstacles, radius)
         if status == 'Reached':
             G_A.success = True
             G_B.success = True
-            G_A.endpos = newvex
-            G_B.endpos = newvex
+            G_A.end = newvex
+            G_B.end = newvex
             path_A = findPath(G_A)
             path_B = findPath(G_B)
             return G_A, G_B, path_A, path_B
@@ -162,17 +220,21 @@ def swap(G0, G1):
     return G0, G1
 
 
+# ------------------------- Path Reconstruction -----------------------------
+
+
 def findPath(G: Graph):
     """
-    The way we build the tree makes it really easy to build the path from startpos to endpos
+    The way we build the tree makes it really easy to build the path_list from start to end
+    Each node is only connected to a single other with an id below its own
     :param G: Our tree
-    :return: Path from startpos to endpos
+    :return: Path from start to end
     """
-    path = [G.endpos]
+    path = [G.end]
     predecessor = G.vertices[G.neighbors[G.vex2idx[path[-1]]][0][0]]
-    while predecessor != G.startpos:
+    while predecessor != G.start:
         path.append(predecessor)
         predecessor = G.vertices[G.neighbors[G.vex2idx[path[-1]]][0][0]]
-    path.append(G.startpos)
+    path.append(G.start)
     path.reverse()  # not necessary but nicer
     return path
