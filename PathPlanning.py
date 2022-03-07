@@ -71,8 +71,7 @@ def RRT_star(startpos, endpos, obstacles, window, n_iter, stepSize, radius=None)
 
     for i in range(n_iter):
 
-        if endpos in G.vex2idx:  # checks if the goal position is not already in the tree
-            G.success = True
+        if G.success:  # checks if the goal position is not already in the tree
             break
 
         # ---- RANDOM CONFIG
