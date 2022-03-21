@@ -3,7 +3,7 @@
 Python version of the RRT-Star algorithm in a 3D mesh environment. This code is meant to be run in a ROS environment. 
 
 	
-![image](https://github.com/thecodebuzz/FileSizePOC/blob/master/TheCodebuzz.png?raw=true)
+![image](https://github.com/mbendjilali/PIE/blob/main/pointcloud2.png)
 
 ## Description
 
