@@ -69,7 +69,6 @@ ex. Moussa Bendjilali at bendjilali.moussa@outlook.fr
 
 * 2.0
     * Various bug fixes and optimizations
-    * See [commit change]() or See [release history]()
 * 1.0
     * Initial Release
 
