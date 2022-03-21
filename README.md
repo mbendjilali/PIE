@@ -1,4 +1,4 @@
-# PIE Navigation d'un drone autonome par Path Planning
+# PIE Autonomous UAV / Path Planning
 
 Python version of the RRT-Star algorithm in a 3D mesh environment. This code is meant to be run in a ROS environment. 
 
@@ -26,7 +26,6 @@ An in-depth paragraph about your project and overview of use.
 ```
     pcd = list2PointCloud(txt2list('obstacles.txt'))
     mesh = pointCloud2Mesh(pcd)
-    
 ```
 
 ## Help
@@ -45,7 +44,6 @@ RRT_star(startpos, endpos, obstacles, window, n_iter, stepSize, radius=None)
     :param stepSize: minimum increment in the tree
     :param radius: obsolete parameter for polygonal representation of the obstacles
     :return: graph
-
 ```
 
 ## Authors
