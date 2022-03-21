@@ -7,7 +7,17 @@ Python version of the RRT-Star algorithm in a 3D mesh environment. This code is 
 
 ## Description
 
-An in-depth paragraph about your project and overview of use.
+This code is an attempt at implementing a 3D version of the previously coded RRT-start by [Fanjin Zeng](https://gist.github.com/Fnjn/58e5eaa27a3dc004c3526ea82a92de80) using a polygonal representation of the obstacles.
+
+It is parted in 5 different Python files :
+* ClassDefinition.py -> Defines the most basic structures needed to implement an RRT algorithm, i.e. what a graph,
+a line and a window are.
+* Geometry.py        -> Sets up collision criteria for objects in a 3D space (spheres, cubes, and triangles).
+* PathPlanning.py    -> Implements the RRT-Star and RRT-Connect (currently not working) algorithms. It also retrieves
+the correct path_list from start to goal within a successful tree.
+* meshRecon.py       -> Uses the Alpha Shape algorithm to generate a triangle set from a point cloud.
+* main.py            -> Sets up every parameter, loads a point cloud, derives the RRT algorithm and plots the result.
+
 
 ## Getting Started
 
